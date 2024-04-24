@@ -53,7 +53,7 @@ app.UseHttpsRedirection();
 
 ReviewsApi.Map(app);
 UsersApi.Map(app);
-
+MoviesApi.Map(app);
 
 app.Run();
 

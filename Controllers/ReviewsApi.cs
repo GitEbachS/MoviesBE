@@ -9,7 +9,7 @@ namespace MoviesBE.Controllers
         public static void Map(WebApplication app)
         {
             //get reviews by movieId
-            app.MapGet("/reviews/{movieId}", (MoviesBEDbContext db, int movieId) =>
+            app.MapGet("/reviews/singleMovie/{movieId}", (MoviesBEDbContext db, int movieId) =>
             {
                 var reviewList = db.Reviews
                                     .Where(r => r.MovieId == movieId)
@@ -17,6 +17,7 @@ namespace MoviesBE.Controllers
                                     .Select(r => new
                                     {
                                         r.Id,
+                                        r.UserId,
                                         AuthorName = db.Users.Where(u => u.Id == r.UserId).Select(u => u.Name)
                                         .FirstOrDefault(),
                                         r.MovieId,
@@ -30,7 +31,7 @@ namespace MoviesBE.Controllers
             });
 
             //get reviews by userId
-            app.MapGet("/reviews/{userId}", (MoviesBEDbContext db, int userId) =>
+            app.MapGet("/reviews/singleUser/{userId}", (MoviesBEDbContext db, int userId) =>
             {
                 var reviewList = db.Reviews
                                     .Where(r => r.UserId == userId)
@@ -38,6 +39,7 @@ namespace MoviesBE.Controllers
                                     .Select(r => new
                                     {
                                         r.Id,
+                                        r.UserId,
                                         AuthorName = db.Users.Where(u => u.Id == r.UserId).Select(u => u.Name)
                                         .FirstOrDefault(),
                                         r.MovieId,
