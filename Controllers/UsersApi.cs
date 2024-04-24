@@ -68,6 +68,7 @@ namespace MoviesBE.Controllers
                 }
                 return Results.Ok(singleUser);
             });
+
         }
     }
 }
