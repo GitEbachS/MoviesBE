@@ -9,5 +9,17 @@ public class Movie
     public string Description { get; set; }
     public DateTime DateReleased { get; set; }
     public ICollection<Genre> Genres { get; set; }
-
+    public List<Review> Reviews { get; set; }
+    public decimal MovieRating
+        {
+            get
+            {
+                if (Reviews != null && Reviews.Any())
+                {
+                decimal value = (Reviews.Sum(r => r.Rating) / Reviews.Count());
+                return Math.Round(value, 2);
+                }
+                return 0;
+            }
+        }
 }
