@@ -52,6 +52,59 @@ namespace MoviesBE.Controllers
                 return Results.Ok(reviewList);
             });
 
+            // get review by movieId and userId - if the user has reviewed a movie, get that review
+            app.MapGet("/reviews/{movieId}/user/{userId}", (MoviesBEDbContext db, int movieId, int userId) =>
+            {
+                var singleReview = db.Reviews
+                    .Where(m => m.MovieId == movieId && m.UserId == userId)
+                    .FirstOrDefault();
+
+                if (singleReview == null)
+                {
+                    return Results.Empty;
+                }
+
+                return Results.Ok(singleReview);
+            });
+
+            // create review
+            app.MapPost("/reviews", (MoviesBEDbContext db, Review newReview) =>
+            {
+                db.Reviews.Add(newReview);
+                db.SaveChanges();
+                return Results.Created($"/reviews/{newReview.Id}", newReview);
+            });
+
+            // update review
+            app.MapPut("/reviews/{id}", (MoviesBEDbContext db, int id, Review review) =>
+            {
+                var reviewToUpdate = db.Reviews.FirstOrDefault(r => r.Id == id);
+                
+                if (reviewToUpdate == null)
+                {
+                    return Results.NotFound();
+                }
+
+                reviewToUpdate.Rating = review.Rating;
+                reviewToUpdate.CommentReview = review.CommentReview;
+
+                db.SaveChanges();
+                return Results.Ok();
+            });
+
+            app.MapDelete("/reviews/{id}", (MoviesBEDbContext db, int id) =>
+            {
+                var reviewToDelete = db.Reviews.FirstOrDefault(x => x.Id == id);
+
+                if (reviewToDelete == null)
+                {
+                    return Results.NotFound();
+                }
+                
+                db.Reviews.Remove(reviewToDelete);
+                db.SaveChanges();
+                return Results.Ok();
+            });
         }
     }
 }
