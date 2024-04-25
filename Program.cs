@@ -50,10 +50,11 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
 
-
+GenresApi.Map(app);
 ReviewsApi.Map(app);
 UsersApi.Map(app);
 MoviesApi.Map(app);
+
 
 app.Run();
 
