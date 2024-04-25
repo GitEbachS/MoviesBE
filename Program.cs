@@ -1,4 +1,5 @@
 using MoviesBE.Models;
+using MoviesBE.Dto;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
@@ -49,9 +50,10 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
 
-
-MoviesApi.Map(app);
 GenresApi.Map(app);
+ReviewsApi.Map(app);
+UsersApi.Map(app);
+MoviesApi.Map(app);
 
 
 app.Run();
