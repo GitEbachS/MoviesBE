@@ -1,9 +1,11 @@
 using MoviesBE.Models;
+using MoviesBE.Dto;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
+using MoviesBE.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,8 +51,9 @@ app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
 
 
-
-
+ReviewsApi.Map(app);
+UsersApi.Map(app);
+MoviesApi.Map(app);
 
 app.Run();
 
