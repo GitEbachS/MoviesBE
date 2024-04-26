@@ -10,7 +10,7 @@ namespace MoviesBE.Controllers
         public static void Map(WebApplication app)
         {
             //check user
-            app.MapGet("/checkuser/{uid}", (MoviesBEDbContext db, string uid) =>
+            app.MapPost("/checkuser/{uid}", (MoviesBEDbContext db, string uid) =>
             {
                 var user = db.Users.Where(u => u.Uid == uid).FirstOrDefault();
 
