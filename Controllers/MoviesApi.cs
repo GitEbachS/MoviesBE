@@ -13,6 +13,15 @@ namespace MoviesBE.Controllers
                 return db.Movies
                     .Include(m => m.Genres)
                     .Include(m => m.Reviews)
+                    .Select(m => new
+                    {
+                        m.Id,
+                        m.Title,
+                        m.Image,
+                        m.Description,
+                        DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
+                        m.MovieRating,
+                    })
                     .ToList();
             });
 
@@ -22,23 +31,41 @@ namespace MoviesBE.Controllers
                 return db.Movies
                     .Include(m => m.Genres)
                     .Include(m => m.Reviews)
+                     .Select(m => new
+                     {
+                         m.Id,
+                         m.Title,
+                         m.Image,
+                         m.Description,
+                         DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
+                         m.MovieRating,
+                     })
                     .FirstOrDefault(m => m.Id == movieId);
             });
 
             //get top reviewed 20 movies
-                app.MapGet("/movies/toprated", (MoviesBEDbContext db) =>
-                {
-                    var movies = db.Movies
-                        .Include(m => m.Reviews)
-                        .ToList();
+            app.MapGet("/movies/toprated", (MoviesBEDbContext db) =>
+            {
+                var movies = db.Movies
+                    .Include(m => m.Reviews)
+                    .ToList();
 
-                    var topRatedMovies = movies
-                        .OrderByDescending(m => m.MovieRating)
-                        .Take(20)
-                        .ToList();
+                var topRatedMovies = movies
+                    .OrderByDescending(m => m.MovieRating)
+                    .Take(20)
+                      .Select(m => new
+                      {
+                          m.Id,
+                          m.Title,
+                          m.Image,
+                          m.Description,
+                          DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
+                          m.MovieRating,
+                      })
+                    .ToList();
 
-                    return topRatedMovies; 
-                });
+                return topRatedMovies;
+            });
 
             //***get recent 20 movies
             app.MapGet("/movies/recent", (MoviesBEDbContext db) =>
@@ -46,8 +73,18 @@ namespace MoviesBE.Controllers
                 return db.Movies
                     .OrderByDescending(m => m.DateReleased)
                     .Take(20)
+                      .Select(m => new
+                      {
+                          m.Id,
+                          m.Title,
+                          m.Image,
+                          m.Description,
+                          DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
+                          m.MovieRating,
+                      })
                     .ToList();
             });
+
             //Search movies by Title
             app.MapGet("/movies/search/{query}", (MoviesBEDbContext db, string query) =>
             {
@@ -67,7 +104,6 @@ namespace MoviesBE.Controllers
                     return Results.Ok(filteredPosts);
                 }
             });
-
         }
     }
 }
