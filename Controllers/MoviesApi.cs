@@ -29,19 +29,31 @@ namespace MoviesBE.Controllers
             app.MapGet("/movies/{movieId}", (MoviesBEDbContext db, int movieId) =>
             {
                 return db.Movies
+                    .Where(m => m.Id == movieId)
                     .Include(m => m.Genres)
                     .Include(m => m.Reviews)
-                     .Select(m => new
-                     {
-                         m.Id,
-                         m.Title,
-                         m.Image,
-                         m.Description,
-                         DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
-                         m.MovieRating,
-                     })
-                    .FirstOrDefault(m => m.Id == movieId);
+                    .Select(m => new
+                    {
+                        m.Id,
+                        m.Title,
+                        m.Image,
+                        m.Description,
+                        DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
+                        m.MovieRating,
+                        Genres = m.Genres.Select(g => new { g.Id, g.Name }), // Include genres
+                        Reviews = m.Reviews.Select(r => new
+                        {
+                            r.Id,
+                            r.Rating,
+                            r.UserId,
+                            r.MovieId,
+                            r.CommentReview,
+                            DateCreated = r.DateCreated.ToString("MM/dd/yyyy"),
+                        }) // Include reviews
+                    })
+                    .FirstOrDefault();
             });
+
 
             //get top reviewed 20 movies
             app.MapGet("/movies/toprated", (MoviesBEDbContext db) =>
