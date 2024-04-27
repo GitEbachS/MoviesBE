@@ -48,6 +48,25 @@ namespace MoviesBE.Controllers
                     .Take(20)
                     .ToList();
             });
+            //Search movies by Title
+            app.MapGet("/movies/search/{query}", (MoviesBEDbContext db, string query) =>
+            {
+                if (string.IsNullOrWhiteSpace(query))
+                {
+                    return Results.BadRequest("Search query cannot be empty");
+                }
+
+                var filteredPosts = db.Movies.Where(m => m.Title.ToLower().Contains(query.ToLower())).ToList();
+
+                if (filteredPosts.Count == 0)
+                {
+                    return Results.NotFound("No posts found for the given search query.");
+                }
+                else
+                {
+                    return Results.Ok(filteredPosts);
+                }
+            });
 
         }
     }
