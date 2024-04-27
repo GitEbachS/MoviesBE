@@ -57,6 +57,17 @@ namespace MoviesBE.Controllers
             {
                 var singleReview = db.Reviews
                     .Where(m => m.MovieId == movieId && m.UserId == userId)
+                    .Select(r => new
+                    {
+                        r.Id,
+                        r.UserId,
+                        AuthorName = db.Users.Where(u => u.Id == r.UserId).Select(u => u.Name)
+                                        .FirstOrDefault(),
+                        r.MovieId,
+                        r.Rating,
+                        r.CommentReview,
+                        DateCreated = r.DateCreated.ToString("MM/dd/yyyy"),
+                    })
                     .FirstOrDefault();
 
                 if (singleReview == null)
