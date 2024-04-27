@@ -20,6 +20,7 @@ namespace MoviesBE.Controllers
                                         r.UserId,
                                         AuthorName = db.Users.Where(u => u.Id == r.UserId).Select(u => u.Name)
                                         .FirstOrDefault(),
+                                        AuthorImage = db.Users.Where(u =>u.Id == r.UserId).Select(ai => ai.Image).FirstOrDefault(),
                                         r.MovieId,
                                         r.Rating,
                                         r.CommentReview,
