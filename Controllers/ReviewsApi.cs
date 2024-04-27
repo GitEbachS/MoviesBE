@@ -1,6 +1,7 @@
 ﻿using MoviesBE.Models;
 using Microsoft.EntityFrameworkCore;
 using MoviesBE.Dto;
+using System.Linq;
 
 namespace MoviesBE.Controllers
 {
@@ -36,7 +37,7 @@ namespace MoviesBE.Controllers
             {
                 var reviewList = db.Reviews
                                     .Where(r => r.UserId == userId)
-                                    .OrderByDescending (r => r.DateCreated)
+                                    .OrderByDescending(r => r.DateCreated)
                                     .Select(r => new
                                     {
                                         r.Id,
@@ -44,6 +45,9 @@ namespace MoviesBE.Controllers
                                         AuthorName = db.Users.Where(u => u.Id == r.UserId).Select(u => u.Name)
                                         .FirstOrDefault(),
                                         r.MovieId,
+                                        AuthorImage = db.Users.Where(u => u.Id == r.UserId).Select(ai => ai.Image).FirstOrDefault(),
+                                        MovieImage = db.Movies.Where(u => u.Id == r.MovieId).Select(ai => ai.Image).FirstOrDefault(),
+                                        MovieName = db.Movies.Where(u => u.Id == r.MovieId).Select(ai => ai.Title).FirstOrDefault(),
                                         r.Rating,
                                         r.CommentReview,
                                         DateCreated = r.DateCreated.ToString("MM/dd/yyyy"),
