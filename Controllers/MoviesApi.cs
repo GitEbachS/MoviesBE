@@ -62,6 +62,7 @@ namespace MoviesBE.Controllers
             app.MapGet("/movies/toprated", (MoviesBEDbContext db) =>
             {
                 var movies = db.Movies
+                    .Include(m => m.Genres)
                     .Include(m => m.Reviews)
                     .ToList();
 
