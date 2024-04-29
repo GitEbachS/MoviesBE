@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MoviesBE.Dto;
 using MoviesBE.Models;
 
 namespace MoviesBE.Controllers
@@ -21,6 +22,8 @@ namespace MoviesBE.Controllers
                         m.Description,
                         DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
                         m.MovieRating,
+                        Genres = m.Genres.Select(g => new { g.Id, g.Name }), // Include genres
+
                     })
                     .ToList();
             });
@@ -55,7 +58,7 @@ namespace MoviesBE.Controllers
             });
 
 
-            //get top reviewed 20 movies
+            //***get top reviewed 20 movies
             app.MapGet("/movies/toprated", (MoviesBEDbContext db) =>
             {
                 var movies = db.Movies
@@ -73,6 +76,7 @@ namespace MoviesBE.Controllers
                           m.Description,
                           DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
                           m.MovieRating,
+                          Genres = m.Genres.Select(g => new { g.Id, g.Name }), // Include genres
                       })
                     .ToList();
 
@@ -93,11 +97,12 @@ namespace MoviesBE.Controllers
                           m.Description,
                           DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
                           m.MovieRating,
+                          Genres = m.Genres.Select(g => new { g.Id, g.Name }), // Include genres
                       })
                     .ToList();
             });
 
-            //Search movies by Title
+            //***Search movies by Title
             app.MapGet("/movies/search/{query}", (MoviesBEDbContext db, string query) =>
             {
                 if (string.IsNullOrWhiteSpace(query))
@@ -105,17 +110,115 @@ namespace MoviesBE.Controllers
                     return Results.BadRequest("Search query cannot be empty");
                 }
 
-                var filteredPosts = db.Movies.Where(m => m.Title.ToLower().Contains(query.ToLower())).ToList();
+                var filteredMovies = db.Movies
+                    .Include(m => m.Genres) // Include genres
+                    .Where(m => m.Title.ToLower().Contains(query.ToLower()))
+                    .Select(m => new
+                    {
+                        m.Id,
+                        m.Title,
+                        m.Image,
+                        m.Description,
+                        DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
+                        m.MovieRating,
+                        Genres = m.Genres.Select(g => new { g.Id, g.Name }), // Include genres
+                    })
+                    .ToList();
 
-                if (filteredPosts.Count == 0)
+                if (filteredMovies.Count == 0)
                 {
-                    return Results.NotFound("No posts found for the given search query.");
+                    return Results.NotFound("No movies found for the given search query.");
                 }
                 else
                 {
-                    return Results.Ok(filteredPosts);
+                    return Results.Ok(filteredMovies);
                 }
             });
+
+
+            //***delete movie
+            app.MapDelete("/movies/remove/{id}", (MoviesBEDbContext db, int id) =>
+            {
+                var movieToDelete = db.Movies
+                                    .Include(m => m.Genres)
+                                    .Include(m => m.Reviews)
+                                    .FirstOrDefault(m => m.Id == id);
+
+                if (movieToDelete == null)
+                {
+                    return Results.NotFound();
+                }
+
+                db.Movies.Remove(movieToDelete);
+                db.SaveChanges();
+
+                return Results.Ok(movieToDelete);
+            });
+
+            //***create movie
+            app.MapPost("/movies", (MoviesBEDbContext db, MovieToUpdateDto newMovieDto) =>
+            {
+                var newMovie = new Movie
+                {
+                    Title = newMovieDto.Title,
+                    Description = newMovieDto.Description,
+                    Image = newMovieDto.Image,
+                    DateReleased = newMovieDto.DateReleased,
+                    Genres = new List<Genre>()
+                };
+
+                // Add the new movie to the database context
+                db.Movies.Add(newMovie);
+
+                // Add genres to the new movie
+                foreach (var genreId in newMovieDto.GenreIds)
+                {
+                    var genre = db.Genres.Find(genreId);
+                    if (genre != null)
+                    {
+                        newMovie.Genres.Add(genre);
+                    }
+                }
+
+                db.SaveChanges();
+
+                return Results.Created($"/movies/{newMovie.Id}", newMovie);
+            });
+
+            //**update Movie
+            app.MapPut("/movies/{id}", (MoviesBEDbContext db, MovieToUpdateDto updateMovieDto, int id) =>
+            {
+                var movieToUpdate = db.Movies
+                                        .Include(m => m.Genres)
+                                        .FirstOrDefault(m => m.Id == id);
+
+                if (movieToUpdate == null)
+                {
+                    return Results.NotFound();
+                }
+
+                // Update movie properties
+                movieToUpdate.Title = updateMovieDto.Title;
+                movieToUpdate.Description = updateMovieDto.Description;
+                movieToUpdate.Image = updateMovieDto.Image;
+                movieToUpdate.DateReleased = updateMovieDto.DateReleased;
+
+                // Update movie's genres
+                movieToUpdate.Genres.Clear(); // Remove existing genres
+
+                foreach (var genreId in updateMovieDto.GenreIds)
+                {
+                    var genre = db.Genres.Find(genreId);
+                    if (genre != null)
+                    {
+                        movieToUpdate.Genres.Add(genre);
+                    }
+                }
+
+                db.SaveChanges();
+                return Results.Ok(movieToUpdate);
+            });
+
         }
     }
 }

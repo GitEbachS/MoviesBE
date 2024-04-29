@@ -30,7 +30,7 @@ namespace MoviesBE.Controllers
                     Image = userDto.Image,
                     Email = userDto.Email,
                     Uid = userDto.Uid,
-                    IsAdmin = true,
+                    IsAdmin = false,
                 };
                 db.Users.Add(newUser);
                 db.SaveChanges();
