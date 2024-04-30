@@ -1,6 +1,8 @@
 ﻿using MoviesBE.Models;
 using Microsoft.EntityFrameworkCore;
 using MoviesBE.Dto;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace MoviesBE.Controllers
@@ -70,7 +72,7 @@ namespace MoviesBE.Controllers
             });
 
             //add a movie to a user's watchlist
-            app.MapPost("/userWatchList/addMovie", (MoviesBEDbContext db, UserMovieDto addUserMovieDto) =>
+            app.MapPost("/user/addMovie", (MoviesBEDbContext db, UserMovieDto addUserMovieDto) =>
             {
                 var singleUserListToUpdate = db.Users
                                             .Include(u => u.Movies)
@@ -90,6 +92,96 @@ namespace MoviesBE.Controllers
                 }
 
             });
+
+            //delete movie from user's watchlist
+            app.MapDelete("/users/{userId}/deleteMovie/{movieId}", (MoviesBEDbContext db, int movieId, int userId) =>
+            {
+
+                var user = db.Users
+                 .Include(u => u.Movies)
+                 .FirstOrDefault(u => u.Id == userId);
+
+                if (user == null)
+                {
+
+                    return Results.NotFound();
+                }
+                var movieToRemove = db.Movies
+                                    .FirstOrDefault(m => m.Id == movieId);
+                if (movieToRemove == null)
+                {
+                    return Results.NotFound();
+                }
+
+                user.Movies.Remove(movieToRemove);
+                db.SaveChanges();
+                return Results.Ok();
+            });
+
+            //get user's movie list
+            app.MapGet("/singleUser/watchlist/{userId}", (MoviesBEDbContext db, int userId) =>
+            {
+                var watchList = db.Users
+                                .Include(m => m.Movies)
+                                .ThenInclude(m => m.Genres)
+                                .Where(u => u.Id == userId)
+                                 .Select(u => new
+                                 {
+                                     u.Id,
+                                     u.Name,
+                                     u.Email,
+                                     u.Image,
+                                     u.IsAdmin,
+                                     Movies = u.Movies.Select(m => new
+                                     {
+                                         m.Id,
+                                         m.Title,
+                                         m.Image,
+                                         m.Description,
+                                         DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
+                                         m.MovieRating,
+                                         Genres = m.Genres.Select(g => new { g.Id, g.Name })
+                                     })
+                                 })
+                        .FirstOrDefault();
+
+                if (watchList == null)
+                {
+                    return Results.NotFound();
+                }
+                return Results.Ok(watchList);
+            });
+
+            //get the watchlist by userId only (userobj is not in this)
+            app.MapGet("/userId/watchlist/{userId}", (MoviesBEDbContext db, int userId) =>
+            {
+                var watchList = db.Users
+                                .Include(u => u.Movies)
+                                .ThenInclude(m => m.Genres)
+                                .Where(u => u.Id == userId)
+                                .Select(u => new
+                                {
+                                    Movies = u.Movies.Select(m => new
+                                    {
+                                        m.Id,
+                                        m.Title,
+                                        m.Image,
+                                        m.Description,
+                                        DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
+                                        m.MovieRating,
+                                        Genres = m.Genres.Select(g => new { g.Id, g.Name })
+                                    })
+                                })
+                                .FirstOrDefault();
+
+                if (watchList == null)
+                {
+                    return Results.NotFound();
+                }
+
+                return Results.Ok(watchList);
+            });
+
 
         }
     }
