@@ -7,6 +7,7 @@ namespace MoviesBE.Models;
     public string? Image { get; set; }
     public string Email { get; set; }
     public bool IsAdmin { get; set; }
+    public ICollection<Movie> Movies { get; set; }
     public string Uid { get; set; }
 }
 

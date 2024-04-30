@@ -69,6 +69,28 @@ namespace MoviesBE.Controllers
                 return Results.Ok(singleUser);
             });
 
+            //add a movie to a user's watchlist
+            app.MapPost("/userWatchList/addMovie", (MoviesBEDbContext db, UserMovieDto addUserMovieDto) =>
+            {
+                var singleUserListToUpdate = db.Users
+                                            .Include(u => u.Movies)
+                                            .FirstOrDefault(u => u.Id == addUserMovieDto.UserId);
+                var movieToAdd = db.Movies
+                                            .FirstOrDefault(m => m.Id == addUserMovieDto.MovieId);
+
+                try
+                {
+                    singleUserListToUpdate.Movies.Add(movieToAdd);
+                    db.SaveChanges();
+                    return Results.NoContent();
+                }
+                catch (DbUpdateException)
+                {
+                    return Results.BadRequest("Invalid data submitted");
+                }
+
+            });
+
         }
     }
 }
