@@ -9,6 +9,7 @@ public class Movie
     public string Description { get; set; }
     public DateTime DateReleased { get; set; }
     public ICollection<Genre> Genres { get; set; }
+    public ICollection<User> Users { get; set; }
     public List<Review> Reviews { get; set; }
     public decimal MovieRating
         {
