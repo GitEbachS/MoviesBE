@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MoviesBE.Migrations
 {
     [DbContext(typeof(MoviesBEDbContext))]
-    partial class MoviesBEDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240501213431_shariCreate")]
+    partial class shariCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,7 +35,22 @@ namespace MoviesBE.Migrations
 
                     b.HasIndex("MoviesId");
 
-                    b.ToTable("GenreMovie", (string)null);
+                    b.ToTable("GenreMovie");
+                });
+
+            modelBuilder.Entity("MovieUser", b =>
+                {
+                    b.Property<int>("MoviesId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsersId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("MoviesId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("MovieUser");
                 });
 
             modelBuilder.Entity("MoviesBE.Models.Genre", b =>
@@ -445,34 +462,6 @@ namespace MoviesBE.Migrations
                         });
                 });
 
-            modelBuilder.Entity("MoviesBE.Models.Recommendation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("RecUserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("RecommendedMovieId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SingleMovieId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RecUserId");
-
-                    b.HasIndex("RecommendedMovieId");
-
-                    b.HasIndex("SingleMovieId");
-
-                    b.ToTable("Recommendations");
-                });
-
             modelBuilder.Entity("MoviesBE.Models.Review", b =>
                 {
                     b.Property<int>("Id")
@@ -508,7 +497,7 @@ namespace MoviesBE.Migrations
                         {
                             Id = 1,
                             CommentReview = "Excellent movie, highly recommended.",
-                            DateCreated = new DateTime(2024, 5, 1, 16, 41, 43, 169, DateTimeKind.Local).AddTicks(8621),
+                            DateCreated = new DateTime(2024, 5, 1, 16, 34, 31, 397, DateTimeKind.Local).AddTicks(8942),
                             MovieId = 1,
                             Rating = 5,
                             UserId = 1
@@ -517,7 +506,7 @@ namespace MoviesBE.Migrations
                         {
                             Id = 2,
                             CommentReview = "Enjoyed it, but pacing was a bit slow.",
-                            DateCreated = new DateTime(2024, 5, 1, 16, 41, 43, 169, DateTimeKind.Local).AddTicks(8678),
+                            DateCreated = new DateTime(2024, 5, 1, 16, 34, 31, 397, DateTimeKind.Local).AddTicks(8995),
                             MovieId = 2,
                             Rating = 4,
                             UserId = 2
@@ -526,7 +515,7 @@ namespace MoviesBE.Migrations
                         {
                             Id = 3,
                             CommentReview = "Decent movie, but expected more from the storyline.",
-                            DateCreated = new DateTime(2024, 5, 1, 16, 41, 43, 169, DateTimeKind.Local).AddTicks(8681),
+                            DateCreated = new DateTime(2024, 5, 1, 16, 34, 31, 397, DateTimeKind.Local).AddTicks(8998),
                             MovieId = 3,
                             Rating = 3,
                             UserId = 3
@@ -535,7 +524,7 @@ namespace MoviesBE.Migrations
                         {
                             Id = 4,
                             CommentReview = "Absolutely loved it, couldn't stop thinking about it!",
-                            DateCreated = new DateTime(2024, 5, 1, 16, 41, 43, 169, DateTimeKind.Local).AddTicks(8683),
+                            DateCreated = new DateTime(2024, 5, 1, 16, 34, 31, 397, DateTimeKind.Local).AddTicks(9000),
                             MovieId = 4,
                             Rating = 5,
                             UserId = 4
@@ -544,7 +533,7 @@ namespace MoviesBE.Migrations
                         {
                             Id = 5,
                             CommentReview = "Great action scenes, but the plot was a bit predictable.",
-                            DateCreated = new DateTime(2024, 5, 1, 16, 41, 43, 169, DateTimeKind.Local).AddTicks(8686),
+                            DateCreated = new DateTime(2024, 5, 1, 16, 34, 31, 397, DateTimeKind.Local).AddTicks(9002),
                             MovieId = 5,
                             Rating = 4,
                             UserId = 1
@@ -553,7 +542,7 @@ namespace MoviesBE.Migrations
                         {
                             Id = 6,
                             CommentReview = "Average movie, nothing too special.",
-                            DateCreated = new DateTime(2024, 5, 1, 16, 41, 43, 169, DateTimeKind.Local).AddTicks(8688),
+                            DateCreated = new DateTime(2024, 5, 1, 16, 34, 31, 397, DateTimeKind.Local).AddTicks(9005),
                             MovieId = 6,
                             Rating = 3,
                             UserId = 2
@@ -562,7 +551,7 @@ namespace MoviesBE.Migrations
                         {
                             Id = 7,
                             CommentReview = "One of the best movies I've seen in a long time!",
-                            DateCreated = new DateTime(2024, 5, 1, 16, 41, 43, 169, DateTimeKind.Local).AddTicks(8719),
+                            DateCreated = new DateTime(2024, 5, 1, 16, 34, 31, 397, DateTimeKind.Local).AddTicks(9007),
                             MovieId = 7,
                             Rating = 5,
                             UserId = 3
@@ -571,7 +560,7 @@ namespace MoviesBE.Migrations
                         {
                             Id = 8,
                             CommentReview = "Really enjoyed it, great performances from the cast.",
-                            DateCreated = new DateTime(2024, 5, 1, 16, 41, 43, 169, DateTimeKind.Local).AddTicks(8722),
+                            DateCreated = new DateTime(2024, 5, 1, 16, 34, 31, 397, DateTimeKind.Local).AddTicks(9009),
                             MovieId = 8,
                             Rating = 4,
                             UserId = 4
@@ -580,7 +569,7 @@ namespace MoviesBE.Migrations
                         {
                             Id = 9,
                             CommentReview = "Hilarious movie, had me laughing from start to finish!",
-                            DateCreated = new DateTime(2024, 5, 1, 16, 41, 43, 169, DateTimeKind.Local).AddTicks(8725),
+                            DateCreated = new DateTime(2024, 5, 1, 16, 34, 31, 397, DateTimeKind.Local).AddTicks(9011),
                             MovieId = 9,
                             Rating = 4,
                             UserId = 1
@@ -589,7 +578,7 @@ namespace MoviesBE.Migrations
                         {
                             Id = 10,
                             CommentReview = "Some funny moments, but overall a bit too silly for my taste.",
-                            DateCreated = new DateTime(2024, 5, 1, 16, 41, 43, 169, DateTimeKind.Local).AddTicks(8727),
+                            DateCreated = new DateTime(2024, 5, 1, 16, 34, 31, 397, DateTimeKind.Local).AddTicks(9014),
                             MovieId = 10,
                             Rating = 3,
                             UserId = 1
@@ -665,21 +654,6 @@ namespace MoviesBE.Migrations
                         });
                 });
 
-            modelBuilder.Entity("UserMovie", b =>
-                {
-                    b.Property<int>("MovieId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("MovieId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserMovie");
-                });
-
             modelBuilder.Entity("GenreMovie", b =>
                 {
                     b.HasOne("MoviesBE.Models.Genre", null)
@@ -695,31 +669,19 @@ namespace MoviesBE.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MoviesBE.Models.Recommendation", b =>
+            modelBuilder.Entity("MovieUser", b =>
                 {
-                    b.HasOne("MoviesBE.Models.User", "RecUser")
-                        .WithMany("Recommendations")
-                        .HasForeignKey("RecUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MoviesBE.Models.Movie", "RecommendedMovie")
+                    b.HasOne("MoviesBE.Models.Movie", null)
                         .WithMany()
-                        .HasForeignKey("RecommendedMovieId")
+                        .HasForeignKey("MoviesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MoviesBE.Models.Movie", "SingleMovie")
-                        .WithMany("Recommendations")
-                        .HasForeignKey("SingleMovieId")
+                    b.HasOne("MoviesBE.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("RecUser");
-
-                    b.Navigation("RecommendedMovie");
-
-                    b.Navigation("SingleMovie");
                 });
 
             modelBuilder.Entity("MoviesBE.Models.Review", b =>
@@ -731,31 +693,9 @@ namespace MoviesBE.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("UserMovie", b =>
-                {
-                    b.HasOne("MoviesBE.Models.Movie", null)
-                        .WithMany()
-                        .HasForeignKey("MovieId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MoviesBE.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("MoviesBE.Models.Movie", b =>
                 {
-                    b.Navigation("Recommendations");
-
                     b.Navigation("Reviews");
-                });
-
-            modelBuilder.Entity("MoviesBE.Models.User", b =>
-                {
-                    b.Navigation("Recommendations");
                 });
 #pragma warning restore 612, 618
         }

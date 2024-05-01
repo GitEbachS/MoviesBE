@@ -7,10 +7,42 @@ public class MoviesBEDbContext : DbContext
     public DbSet<Genre> Genres { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<User> Users { get; set; }
-  
+    public DbSet<Recommendation> Recommendations { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Configure many-to-many relationship between User and Movie for general movie recommendations (not user-specific)
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Movies)
+            .WithMany(m => m.Users)
+            .UsingEntity<Dictionary<string, object>>(
+                "UserMovie",
+                j => j
+                    .HasOne<Movie>()
+                    .WithMany()
+                    .HasForeignKey("MovieId"),
+                j => j
+                    .HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey("UserId")
+            );
+
+        modelBuilder.Entity<Movie>()
+               .HasMany(m => m.Recommendations) // Movie has many Recommendations
+               .WithOne(r => r.SingleMovie) // Recommendation has one SingleMovie
+               .HasForeignKey(r => r.SingleMovieId); // Foreign key in Recommendation pointing to Movie
+
+        modelBuilder.Entity<Recommendation>()
+            .HasOne(r => r.RecommendedMovie) // Recommendation has one RecommendedMovie
+            .WithMany() // RecommendedMovie can have many Recommendations
+            .HasForeignKey(r => r.RecommendedMovieId); // Foreign key in Recommendation pointing to Movie
+
+        modelBuilder.Entity<Movie>()
+               .HasMany(m => m.Genres)
+               .WithMany(g => g.Movies)
+               .UsingEntity(j => j.ToTable("GenreMovie"));
+
 
         modelBuilder.Entity<User>().HasData(new User[]
 {
