@@ -222,17 +222,24 @@ namespace MoviesBE.Controllers
 
             //movie recommendations
             //add movie recommendation
-            app.MapPost("/recommendations/new", (MoviesBEDbContext db, Recommendation newRec) =>
+            app.MapPost("/recommendations/new", (MoviesBEDbContext db, RecommendationsDto newRecDto) =>
             {
                 // Check if the movie and user exist
-                if (!db.Movies.Any(m => m.Id == newRec.SingleMovieId) || !db.Users.Any(u => u.Id == newRec.RecUserId) || !db.Movies.Any(m => m.Id == newRec.RecommendedMovieId))
+                if (!db.Movies.Any(m => m.Id == newRecDto.SingleMovieId) || !db.Users.Any(u => u.Id == newRecDto.RecUserId) || !db.Movies.Any(m => m.Id == newRecDto.RecommendedMovieId))
                 {
                     return Results.NotFound();
                 }
 
-                db.Recommendations.Add(newRec);
+                Recommendation newRecommendation = new()
+                {
+                    RecUserId = newRecDto.RecUserId,
+                    SingleMovieId = newRecDto.SingleMovieId,
+                    RecommendedMovieId = newRecDto.RecommendedMovieId
+                };
+
+                db.Recommendations.Add(newRecommendation);
                 db.SaveChanges();
-                return Results.Created($"/recommendations/{newRec.Id}", newRec);
+                return Results.Created($"/recommendations/{newRecommendation.Id}", newRecommendation);
 
             });
 
