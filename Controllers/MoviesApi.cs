@@ -265,8 +265,10 @@ namespace MoviesBE.Controllers
             {
                 var recommendationList = db.Users
                                             .Include(u => u.Recommendations)
+                                                .ThenInclude(r => r.SingleMovie) // Include SingleMovie
+                                                    .ThenInclude(m => m.Genres)
                                             .Where(u => u.Id == userId)
-                                            .Select(u => new
+                                            .SelectMany(u => u.Recommendations, (u, r) => new
                                             {
                                                 u.Id,
                                                 u.Name,
@@ -274,25 +276,30 @@ namespace MoviesBE.Controllers
                                                 u.Image,
                                                 u.IsAdmin,
                                                 u.Uid,
-                                                RecommendedMovies = u.Recommendations.Select(r => r.RecommendedMovie).Select(m => new
+                                                RecommendedMovies = u.Recommendations.Select(recommendation => new
                                                 {
-                                                    m.Id,
-                                                    m.Title,
-                                                    m.Image,
-                                                    m.Description,
-                                                    DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
-                                                    m.MovieRating,
-                                                    Genres = m.Genres.Select(g => new { g.Id, g.Name })
+                                                    recommendation.SingleMovieId, // Include SingleMovieId
+                                                    recommendation.RecommendedMovie.Id,
+                                                    recommendation.RecommendedMovie.Title,
+                                                    recommendation.RecommendedMovie.Image,
+                                                    recommendation.RecommendedMovie.Description,
+                                                    DateReleased = recommendation.RecommendedMovie.DateReleased.ToString("MM/dd/yyyy"),
+                                                    recommendation.RecommendedMovie.MovieRating,
+                                                    Genres = recommendation.RecommendedMovie.Genres.Select(g => new { g.Id, g.Name })
                                                 })
                                             })
-                                            .FirstOrDefault();
+                                            .ToList();
 
-                if (recommendationList == null)
+                if (!recommendationList.Any())
                 {
                     return Results.NotFound();
                 }
+
                 return Results.Ok(recommendationList);
             });
+
+
+
 
             //get single movie's recommended movie list
             app.MapGet("/singleMovie/recommendations/{movieId}", (MoviesBEDbContext db, int movieId) =>
