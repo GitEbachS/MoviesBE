@@ -220,6 +220,116 @@ namespace MoviesBE.Controllers
                 return Results.Ok(movieToUpdate);
             });
 
+            //movie recommendations
+            //add movie recommendation
+            app.MapPost("/recommendations/new", (MoviesBEDbContext db, Recommendation newRec) =>
+            {
+                // Check if the movie and user exist
+                if (!db.Movies.Any(m => m.Id == newRec.SingleMovieId) || !db.Users.Any(u => u.Id == newRec.RecUserId) || !db.Movies.Any(m => m.Id == newRec.RecommendedMovieId))
+                {
+                    return Results.NotFound();
+                }
+
+                db.Recommendations.Add(newRec);
+                db.SaveChanges();
+                return Results.Created($"/recommendations/{newRec.Id}", newRec);
+
+            });
+
+            // Delete recommendation from user's recommended list for a specific movie
+            app.MapDelete("/users/{userId}/deleteRecommendation/{recMovieId}/fromMovie/{movieId}", (MoviesBEDbContext db, int recMovieId, int userId, int movieId) =>
+            {
+                var movieRecToRemove = db.Recommendations
+                                        .Where(r => r.RecUserId == userId && r.RecommendedMovieId == recMovieId && r.SingleMovieId == movieId)
+                                        .FirstOrDefault();
+
+                if (movieRecToRemove == null)
+                {
+                    return Results.NotFound();
+                }
+
+                db.Recommendations.Remove(movieRecToRemove);
+                db.SaveChanges();
+                return Results.Ok("Success!");
+            });
+
+            //get user's recommended movie list
+            app.MapGet("/singleUser/recommendations/{userId}", (MoviesBEDbContext db, int userId) =>
+            {
+                var recommendationList = db.Users
+                                            .Include(u => u.Recommendations)
+                                            .Where(u => u.Id == userId)
+                                            .Select(u => new
+                                            {
+                                                u.Id,
+                                                u.Name,
+                                                u.Email,
+                                                u.Image,
+                                                u.IsAdmin,
+                                                u.Uid,
+                                                RecommendedMovies = u.Recommendations.Select(r => r.RecommendedMovie).Select(m => new
+                                                {
+                                                    m.Id,
+                                                    m.Title,
+                                                    m.Image,
+                                                    m.Description,
+                                                    DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
+                                                    m.MovieRating,
+                                                    Genres = m.Genres.Select(g => new { g.Id, g.Name })
+                                                })
+                                            })
+                                            .FirstOrDefault();
+
+                if (recommendationList == null)
+                {
+                    return Results.NotFound();
+                }
+                return Results.Ok(recommendationList);
+            });
+
+            //get single movie's recommended movie list
+            app.MapGet("/singleMovie/recommendations/{movieId}", (MoviesBEDbContext db, int movieId) =>
+            {
+                var recommendationList = db.Movies
+                                            .Include(m => m.Recommendations)
+                                                .ThenInclude(r => r.RecUser)
+                                            .Where(m => m.Id == movieId)
+                                            .Select(m => new
+                                            {
+                                                m.Id,
+                                                m.Title,
+                                                m.Image,
+                                                m.Description,
+                                                DateReleased = m.DateReleased.ToString("MM/dd/yyyy"),
+                                                m.MovieRating,
+                                                Genres = m.Genres.Select(g => new { g.Id, g.Name }),
+                                                RecommendedMovies = m.Recommendations.Select(r => new
+                                                {
+                                                    RecommendedMovie = r.RecommendedMovie,
+                                                    RecUserName = r.RecUser.Name
+                                                }).Select(recommendedMovie => new
+                                                {
+                                                    recommendedMovie.RecommendedMovie.Id,
+                                                    recommendedMovie.RecommendedMovie.Title,
+                                                    recommendedMovie.RecommendedMovie.Image,
+                                                    recommendedMovie.RecommendedMovie.Description,
+                                                    DateReleased = recommendedMovie.RecommendedMovie.DateReleased.ToString("MM/dd/yyyy"),
+                                                    recommendedMovie.RecommendedMovie.MovieRating,
+                                                    Genres = recommendedMovie.RecommendedMovie.Genres.Select(g => new { g.Id, g.Name }),
+                                                    RecUserName = recommendedMovie.RecUserName // RecUser's name
+                                                })
+                                            })
+                                            .FirstOrDefault();
+
+                if (recommendationList == null)
+                {
+                    return Results.NotFound();
+                }
+                return Results.Ok(recommendationList);
+            });
+
+
+
         }
     }
 }
