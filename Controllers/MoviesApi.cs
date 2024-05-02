@@ -288,9 +288,9 @@ namespace MoviesBE.Controllers
                                                     Genres = recommendation.RecommendedMovie.Genres.Select(g => new { g.Id, g.Name })
                                                 })
                                             })
-                                            .ToList();
+                                            .FirstOrDefault();
 
-                if (!recommendationList.Any())
+                if (recommendationList == null)
                 {
                     return Results.NotFound();
                 }
