@@ -224,13 +224,23 @@ namespace MoviesBE.Controllers
             //add movie recommendation
             app.MapPost("/recommendations/new", (MoviesBEDbContext db, RecommendationsDto newRecDto) =>
             {
+                // Check if the recommendation already exists for the user
+                if (db.Recommendations.Any(r => r.SingleMovieId == newRecDto.SingleMovieId &&
+                                                 r.RecommendedMovieId == newRecDto.RecommendedMovieId &&
+                                                 r.RecUserId == newRecDto.RecUserId))
+                {
+                    return Results.BadRequest("Recommendation already exists for this user.");
+                }
+
                 // Check if the movie and user exist
-                if (!db.Movies.Any(m => m.Id == newRecDto.SingleMovieId) || !db.Users.Any(u => u.Id == newRecDto.RecUserId) || !db.Movies.Any(m => m.Id == newRecDto.RecommendedMovieId))
+                if (!db.Movies.Any(m => m.Id == newRecDto.SingleMovieId) ||
+                    !db.Users.Any(u => u.Id == newRecDto.RecUserId) ||
+                    !db.Movies.Any(m => m.Id == newRecDto.RecommendedMovieId))
                 {
                     return Results.NotFound();
                 }
 
-                Recommendation newRecommendation = new()
+                Recommendation newRecommendation = new Recommendation
                 {
                     RecUserId = newRecDto.RecUserId,
                     SingleMovieId = newRecDto.SingleMovieId,
@@ -240,8 +250,8 @@ namespace MoviesBE.Controllers
                 db.Recommendations.Add(newRecommendation);
                 db.SaveChanges();
                 return Results.Created($"/recommendations/{newRecommendation.Id}", newRecommendation);
-
             });
+
 
             // Delete recommendation from user's recommended list for a specific movie
             app.MapDelete("/users/{userId}/deleteRecommendation/{recMovieId}/fromMovie/{movieId}", (MoviesBEDbContext db, int recMovieId, int userId, int movieId) =>
@@ -266,9 +276,8 @@ namespace MoviesBE.Controllers
                 var recommendationList = db.Users
                                             .Include(u => u.Recommendations)
                                                 .ThenInclude(r => r.SingleMovie) // Include SingleMovie
-                                                    .ThenInclude(m => m.Genres)
                                             .Where(u => u.Id == userId)
-                                            .SelectMany(u => u.Recommendations, (u, r) => new
+                                            .Select(u => new
                                             {
                                                 u.Id,
                                                 u.Name,
@@ -276,17 +285,31 @@ namespace MoviesBE.Controllers
                                                 u.Image,
                                                 u.IsAdmin,
                                                 u.Uid,
-                                                RecommendedMovies = u.Recommendations.Select(recommendation => new
-                                                {
-                                                    recommendation.SingleMovieId, // Include SingleMovieId
-                                                    recommendation.RecommendedMovie.Id,
-                                                    recommendation.RecommendedMovie.Title,
-                                                    recommendation.RecommendedMovie.Image,
-                                                    recommendation.RecommendedMovie.Description,
-                                                    DateReleased = recommendation.RecommendedMovie.DateReleased.ToString("MM/dd/yyyy"),
-                                                    recommendation.RecommendedMovie.MovieRating,
-                                                    Genres = recommendation.RecommendedMovie.Genres.Select(g => new { g.Id, g.Name })
-                                                })
+                                                Recommendations = u.Recommendations
+                                                    .GroupBy(r => r.SingleMovieId) // Group by SingleMovieId
+                                                    .Select(group => new
+                                                    {
+                                                        SingleMovie = new // Include SingleMovie with its attributes
+                                                        {
+                                                            group.First().SingleMovie.Id,
+                                                            group.First().SingleMovie.Title,
+                                                            group.First().SingleMovie.Image,
+                                                            group.First().SingleMovie.Description,
+                                                            DateReleased = group.First().SingleMovie.DateReleased.ToString("MM/dd/yyyy"),
+                                                            group.First().SingleMovie.MovieRating,
+                                                            Genres = group.First().SingleMovie.Genres.Select(g => new { g.Id, g.Name })
+                                                        },
+                                                        RecommendedMovies = group.Select(r => new
+                                                        {
+                                                            r.RecommendedMovie.Id,
+                                                            r.RecommendedMovie.Title,
+                                                            r.RecommendedMovie.Image,
+                                                            r.RecommendedMovie.Description,
+                                                            DateReleased = r.RecommendedMovie.DateReleased.ToString("MM/dd/yyyy"),
+                                                            r.RecommendedMovie.MovieRating,
+                                                            Genres = r.RecommendedMovie.Genres.Select(g => new { g.Id, g.Name })
+                                                        })
+                                                    })
                                             })
                                             .FirstOrDefault();
 
@@ -297,6 +320,9 @@ namespace MoviesBE.Controllers
 
                 return Results.Ok(recommendationList);
             });
+
+
+
 
 
 

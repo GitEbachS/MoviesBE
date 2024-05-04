@@ -172,7 +172,7 @@ namespace MoviesBE.Controllers
                                         Genres = m.Genres.Select(g => new { g.Id, g.Name })
                                     })
                                 })
-                                .FirstOrDefault();
+                                .ToList();
 
                 if (watchList == null)
                 {
